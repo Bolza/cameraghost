@@ -20,11 +20,26 @@ body {
   gap: 1.5rem;
 }
 
+.app--simple {
+  align-items: center;
+  text-align: center;
+}
+
 .app__title {
   margin: 0;
   font-size: clamp(1.5rem, 2.5vw + 1rem, 2.75rem);
   font-weight: 600;
-  text-align: center;
+}
+
+.app__link {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.app__link:hover {
+  color: #7dd3fc;
 }
 
 .controls {
@@ -96,6 +111,7 @@ body {
 }
 
 .stage {
+  width: 100%;
   border-radius: 1rem;
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -107,6 +123,10 @@ body {
   width: 100%;
   aspect-ratio: 16 / 9;
   background: radial-gradient(circle at center, rgba(148, 163, 184, 0.2), rgba(30, 41, 59, 0.8));
+}
+
+.stage__video-wrapper--auto {
+  max-width: 720px;
 }
 
 .stage__video-wrapper video {
@@ -139,5 +159,9 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  .app--simple {
+    align-items: stretch;
   }
 }
