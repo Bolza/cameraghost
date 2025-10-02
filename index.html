@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera + Overlay</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app">
+    <h1 class="app__title">Video Overlay on Camera Feed</h1>
+
+    <section class="controls" aria-label="Overlay controls">
+      <button id="start-camera" type="button" class="controls__button">Start Camera</button>
+
+      <label class="controls__field">
+        <span>Select overlay video (WebM with alpha works best)</span>
+        <input id="overlay-file" type="file" accept="video/*">
+      </label>
+
+      <div class="controls__row">
+        <label class="controls__field">
+          <span>Overlay URL</span>
+          <input id="overlay-url" type="url" placeholder="https://example.com/overlay.webm">
+        </label>
+        <button id="load-url" type="button" class="controls__button">Load URL</button>
+      </div>
+
+      <label class="controls__field controls__field--inline">
+        <span>Overlay opacity</span>
+        <input id="overlay-opacity" type="range" min="0" max="1" step="0.05" value="1">
+      </label>
+
+      <p id="status" role="status" aria-live="polite" class="status"></p>
+    </section>
+
+    <section class="stage" aria-label="Camera with overlay">
+      <div class="stage__video-wrapper">
+        <video id="camera" autoplay playsinline muted></video>
+        <video id="overlay" autoplay playsinline muted loop></video>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./index.js"></script>
+</body>
+</html>
