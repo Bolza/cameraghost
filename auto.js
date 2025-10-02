@@ -2,18 +2,13 @@ const cameraVideo = document.getElementById("camera");
 const overlayVideo = document.getElementById("overlay");
 const statusElement = document.getElementById("status");
 
-const overlaySources = [
-  {
-    src: "https://storage.googleapis.com/chromium-videos/alpha/alpha.webm",
-    type: "video/webm",
-  },
-  {
-    src: "https://storage.googleapis.com/chromium-videos/alpha/alpha.mp4",
-    type: "video/mp4",
-  },
-];
+const overlaySource = {
+  src: "./scary-video.mp4",
+  type: "video/mp4",
+};
 
 let cameraStream = null;
+let overlayReady = false;
 
 function setStatus(message, isError = false) {
   if (!statusElement) {
@@ -52,21 +47,24 @@ async function startCamera() {
 
     cameraVideo.srcObject = cameraStream;
     await cameraVideo.play();
-    setStatus("Camera running with overlay.");
+
+    if (overlayReady) {
+      setStatus("Camera running with overlay.");
+    } else {
+      setStatus("Camera running. Waiting for overlay…");
+    }
   } catch (error) {
     console.error("Could not access camera", error);
     setStatus("Camera permission denied or unavailable.", true);
   }
 }
 
-function attachOverlaySources(video) {
+function applyOverlaySource(video) {
   video.innerHTML = "";
-  overlaySources.forEach(({ src, type }) => {
-    const source = document.createElement("source");
-    source.src = src;
-    source.type = type;
-    video.appendChild(source);
-  });
+  const source = document.createElement("source");
+  source.src = overlaySource.src;
+  source.type = overlaySource.type;
+  video.appendChild(source);
 }
 
 async function initOverlay() {
@@ -75,17 +73,26 @@ async function initOverlay() {
     return;
   }
 
-  attachOverlaySources(overlayVideo);
   overlayVideo.loop = true;
   overlayVideo.muted = true;
   overlayVideo.playsInline = true;
-  overlayVideo.style.opacity = "1";
+  overlayVideo.style.opacity = "0.5";
+  overlayVideo.style.pointerEvents = "none";
+
+  applyOverlaySource(overlayVideo);
+  overlayVideo.load();
 
   try {
     await overlayVideo.play();
+    overlayReady = true;
+    if (cameraStream) {
+      setStatus("Camera running with overlay.");
+    }
   } catch (error) {
     console.warn("Autoplay blocked for overlay", error);
-    setStatus("Tap the overlay video to play it if it is paused.");
+    overlayVideo.controls = true;
+    overlayVideo.style.pointerEvents = "auto";
+    setStatus("Tap the overlay video to play it.");
   }
 }
 
@@ -103,8 +110,26 @@ window.addEventListener("load", () => {
   void initOverlay();
 });
 
+overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("play", () => {
+  overlayReady = true;
+  overlayVideo.style.pointerEvents = "none";
+  overlayVideo.controls = false;
+  overlayVideo.style.opacity = "0.5";
+  if (cameraStream) {
+    setStatus("Camera running with overlay.");
+  }
+});
+
+overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("pause", () => {
+  if (!overlayVideo.controls) {
+    overlayVideo.controls = true;
+  }
+  overlayVideo.style.pointerEvents = "auto";
+  setStatus("Overlay paused. Tap to resume.");
+});
+
 overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("error", () => {
-  setStatus("Failed to load the overlay video. Replace the source with your own.", true);
+  setStatus("Failed to load the overlay video. Ensure scary-video.mp4 is accessible.", true);
 });
 
 window.addEventListener("beforeunload", () => {
