@@ -8,6 +8,11 @@ const overlaySource = {
 
 let cameraStream = null;
 let overlayReady = false;
+let overlayObjectUrl = null;
+const isIOSWebKit =
+  typeof navigator !== "undefined" &&
+  /AppleWebKit\//.test(navigator.userAgent) &&
+  /(iPad|iPhone|iPod)/.test(navigator.userAgent);
 
 async function startCamera() {
   if (!cameraVideo || cameraStream) {
@@ -22,8 +27,8 @@ async function startCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
+        width: { ideal: isIOSWebKit ? 1280 : 1920 },
+        height: { ideal: isIOSWebKit ? 720 : 1080 },
       },
       audio: false,
     });
@@ -36,12 +41,34 @@ async function startCamera() {
   }
 }
 
-function applyOverlaySource(video) {
-  video.innerHTML = "";
-  const source = document.createElement("source");
-  source.src = overlaySource.src;
-  source.type = overlaySource.type;
-  video.appendChild(source);
+function revokeOverlayObjectUrl() {
+  if (!overlayObjectUrl) {
+    return;
+  }
+
+  URL.revokeObjectURL(overlayObjectUrl);
+  overlayObjectUrl = null;
+}
+
+async function preloadOverlaySource(video) {
+  try {
+    const response = await fetch(overlaySource.src, { cache: "force-cache" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    revokeOverlayObjectUrl();
+    overlayObjectUrl = URL.createObjectURL(blob);
+    video.src = overlayObjectUrl;
+  } catch (error) {
+    console.warn("Falling back to streaming overlay", error);
+    video.innerHTML = "";
+    const source = document.createElement("source");
+    source.src = overlaySource.src;
+    source.type = overlaySource.type;
+    video.appendChild(source);
+  }
 }
 
 async function initOverlay() {
@@ -52,10 +79,11 @@ async function initOverlay() {
   overlayVideo.loop = true;
   overlayVideo.muted = true;
   overlayVideo.playsInline = true;
+  overlayVideo.preload = "auto";
   overlayVideo.style.opacity = "0.5";
   overlayVideo.style.pointerEvents = "none";
 
-  applyOverlaySource(overlayVideo);
+  await preloadOverlaySource(overlayVideo);
   overlayVideo.load();
 
   try {
@@ -75,6 +103,10 @@ function releaseCamera() {
 
   cameraStream.getTracks().forEach((track) => track.stop());
   cameraStream = null;
+}
+
+function releaseOverlay() {
+  revokeOverlayObjectUrl();
 }
 
 window.addEventListener("load", () => {
@@ -109,4 +141,5 @@ overlayVideo === null || overlayVideo === void 0
 
 window.addEventListener("beforeunload", () => {
   releaseCamera();
+  releaseOverlay();
 });
