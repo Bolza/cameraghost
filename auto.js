@@ -2,7 +2,7 @@ const cameraVideo = document.getElementById("camera");
 const overlayVideo = document.getElementById("overlay");
 
 const overlaySource = {
-  src: "./scary-video.mp4",
+  src: "./video_the_door.mp4",
   type: "video/mp4",
 };
 
@@ -82,24 +82,30 @@ window.addEventListener("load", () => {
   void initOverlay();
 });
 
-overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("play", () => {
-  overlayReady = true;
-  overlayVideo.style.pointerEvents = "none";
-  overlayVideo.controls = false;
-  overlayVideo.style.opacity = "0.5";
-});
+overlayVideo === null || overlayVideo === void 0
+  ? void 0
+  : overlayVideo.addEventListener("play", () => {
+      overlayReady = true;
+      overlayVideo.style.pointerEvents = "none";
+      overlayVideo.controls = false;
+      overlayVideo.style.opacity = "0.5";
+    });
 
-overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("pause", () => {
-  if (!overlayReady) {
-    return;
-  }
-  overlayVideo.controls = true;
-  overlayVideo.style.pointerEvents = "auto";
-});
+overlayVideo === null || overlayVideo === void 0
+  ? void 0
+  : overlayVideo.addEventListener("pause", () => {
+      if (!overlayReady) {
+        return;
+      }
+      overlayVideo.controls = true;
+      overlayVideo.style.pointerEvents = "auto";
+    });
 
-overlayVideo === null || overlayVideo === void 0 ? void 0 : overlayVideo.addEventListener("error", () => {
-  console.error("Failed to load scary-video.mp4");
-});
+overlayVideo === null || overlayVideo === void 0
+  ? void 0
+  : overlayVideo.addEventListener("error", () => {
+      console.error("Failed to load scary-video.mp4");
+    });
 
 window.addEventListener("beforeunload", () => {
   releaseCamera();
